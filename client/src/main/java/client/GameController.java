@@ -13,6 +13,6 @@ public enum GameController {
      * Starts the game
      */
     public void startGame() {
-        // Load board
+        Chessboard chessboard = new Chessboard();
     }
 }
