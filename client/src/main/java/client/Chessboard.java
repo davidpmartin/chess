@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -22,7 +23,7 @@ import java.util.HashMap;
  */
 public class Chessboard {
 
-    private HashMap<Integer, ArrayList<Piece>> boardMap;
+    private HashMap<Integer,Piece[]> boardMap;
 
     final Logger logger = LogManager.getLogger(Chessboard.class);
 
@@ -37,47 +38,68 @@ public class Chessboard {
 
             // Black specials
             if (i == 0) {
-                boardMap.put(i, new ArrayList<>(8));
-                boardMap.get(i).add(new BlackRook());
-                boardMap.get(i).add(new BlackKnight());
-                boardMap.get(i).add(new BlackBishop());
-                boardMap.get(i).add(new BlackQueen());
-                boardMap.get(i).add(new BlackKing());
-                boardMap.get(i).add(new BlackBishop());
-                boardMap.get(i).add(new BlackKnight());
-                boardMap.get(i).add(new BlackRook());
-
+                Piece[] pieceArr = {
+                        new BlackRook(),
+                        new BlackKnight(),
+                        new BlackBishop(),
+                        new BlackQueen(),
+                        new BlackKing(),
+                        new BlackBishop(),
+                        new BlackKnight(),
+                        new BlackRook()
+                };
+                boardMap.put(i, pieceArr);
             }
 
             // Black pawns
             else if (i == 1) {
-                boardMap.put(i, new ArrayList<>(8));
-                for (int p = 0; p < size; p++) {
-                    boardMap.get(i).add(new BlackPawn());
-                }
+                Piece[] pieceArr = {
+                        new BlackPawn(),
+                        new BlackPawn(),
+                        new BlackPawn(),
+                        new BlackPawn(),
+                        new BlackPawn(),
+                        new BlackPawn(),
+                        new BlackPawn(),
+                        new BlackPawn()
+                };
+                boardMap.put(i, pieceArr);
             }
 
             // White pawns
             else if (i == 6) {
-                boardMap.put(i, new ArrayList<>(8));
-                for (int p = 0; p < size; p++) {
-                    boardMap.get(i).add(new WhitePawn());
-                }
+                Piece[] pieceArr = {
+                        new WhitePawn(),
+                        new WhitePawn(),
+                        new WhitePawn(),
+                        new WhitePawn(),
+                        new WhitePawn(),
+                        new WhitePawn(),
+                        new WhitePawn(),
+                        new WhitePawn()
+                };
+                boardMap.put(i, pieceArr);
             }
 
             // White specials
             else if (i == 7) {
-                boardMap.put(i, new ArrayList<>(8));
-                boardMap.get(i).add(new WhiteRook());
-                boardMap.get(i).add(new WhiteKnight());
-                boardMap.get(i).add(new WhiteBishop());
-                boardMap.get(i).add(new WhiteQueen());
-                boardMap.get(i).add(new WhiteKing());
-                boardMap.get(i).add(new WhiteBishop());
-                boardMap.get(i).add(new WhiteKnight());
-                boardMap.get(i).add(new WhiteRook());
-            } else {
-                boardMap.put(i, new ArrayList<>(8));
+                Piece[] pieceArr = {
+                        new WhiteRook(),
+                        new WhiteKnight(),
+                        new WhiteBishop(),
+                        new WhiteQueen(),
+                        new WhiteKing(),
+                        new WhiteBishop(),
+                        new WhiteKnight(),
+                        new WhiteRook()
+                };
+                boardMap.put(i, pieceArr);
+            }
+
+            // For everything else
+            else {
+                Piece[] pieceArr = new Piece[8];
+                boardMap.put(i, pieceArr);
             }
         }
     }
@@ -103,7 +125,7 @@ public class Chessboard {
                 // Add a piece if exists
                 try {
                     Piece piece;
-                    piece = boardMap.get(rank).get(file);
+                    piece = boardMap.get(rank)[file];
                     Image img = new Image(piece.getAssetPath(), 80, 80, false, false);
                     ImageView imgView = new ImageView(img);
                     square.getChildren().add(imgView);
@@ -119,7 +141,7 @@ public class Chessboard {
                     public void handle(MouseEvent event) {
                         logger.debug("Row: {}, Col: {}", GridPane.getRowIndex(square), GridPane.getColumnIndex(square));
                         logger.debug("Piece: {}", boardMap.get(
-                                GridPane.getRowIndex(square)).get(GridPane.getColumnIndex(square)).getClass());
+                                GridPane.getRowIndex(square))[GridPane.getColumnIndex(square)].getClass());
                     }
                 });
 
@@ -153,18 +175,18 @@ public class Chessboard {
 
                         // Get selected piece
                         StackPane srcPane = ((StackPane) ((ImageView) event.getGestureSource()).getParent());
+
                         Piece selectedPiece = boardMap.get(
-                                GridPane.getRowIndex(srcPane)).get(
-                                        GridPane.getColumnIndex(srcPane)
-                        );
+                                GridPane.getRowIndex(srcPane))[GridPane.getColumnIndex(srcPane)];
 
                         // Get current coordinates
                         int droppedRow = GridPane.getRowIndex(square);
                         int droppedCol = GridPane.getColumnIndex(square);
 
                         // Change position in boardMap
-                        boardMap.get(droppedRow).add(droppedCol, selectedPiece);
-                        boardMap.get(GridPane.getRowIndex(srcPane)).remove(selectedPiece);
+                        boardMap.get(droppedRow)[droppedCol] = selectedPiece;
+                        boardMap.get(GridPane.getRowIndex(srcPane))[GridPane.getColumnIndex(srcPane)] = null;
+
 
                         // Eval move
 
@@ -195,7 +217,7 @@ public class Chessboard {
 
     }
 
-    public HashMap<Integer, ArrayList<Piece>> getBoardMap() {
+    public HashMap<Integer, Piece[]> getBoardMap() {
         return boardMap;
     }
 
