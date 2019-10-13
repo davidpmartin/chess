@@ -8,6 +8,7 @@ import client.pieces.behaviours.PawnBehaviour;
  */
 public class BlackPawn extends Piece {
 
+    private boolean hasDoubleMove = true;
     private PieceBehaviour behaviour = new PawnBehaviour();
     private String assetPath = "pieces/pawn_b.png";
 
@@ -21,6 +22,14 @@ public class BlackPawn extends Piece {
 
     public String getAssetPath() {
         return assetPath;
+    }
+
+    public PieceBehaviour getBehaviour() {
+        return behaviour;
+    }
+
+    public boolean getDoubleMove() {
+        return hasDoubleMove;
     }
 
 }

@@ -22,4 +22,8 @@ public class BlackKnight extends Piece {
     public String getAssetPath() {
         return assetPath;
     }
+
+    public PieceBehaviour getBehaviour() {
+        return behaviour;
+    }
 }

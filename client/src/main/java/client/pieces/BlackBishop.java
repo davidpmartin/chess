@@ -23,4 +23,8 @@ public class BlackBishop extends Piece {
         return assetPath;
     }
 
+    public PieceBehaviour getBehaviour() {
+        return behaviour;
+    }
+
 }

@@ -24,4 +24,8 @@ public class WhiteKnight extends Piece {
         return assetPath;
     }
 
+    public PieceBehaviour getBehaviour() {
+        return behaviour;
+    }
+
 }

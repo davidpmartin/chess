@@ -23,4 +23,7 @@ public class WhiteRook extends Piece {
         return assetPath;
     }
 
+    public PieceBehaviour getBehaviour() {
+        return behaviour;
+    }
 }

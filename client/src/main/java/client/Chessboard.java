@@ -1,6 +1,8 @@
 package client;
 
 import client.pieces.*;
+import client.pieces.behaviours.PawnBehaviour;
+import client.pieces.behaviours.PieceBehaviour;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -14,12 +16,36 @@ import javafx.scene.layout.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
  * Chessboard class
+ *
+ * Validation logic:
+ *
+ * For any given move::
+ * if (pathIsClear) // Not required for knight, which hops
+ * {
+ *      if (destinationClear)
+ *      {
+ *          MOVE
+ *      }
+ *      else
+ *      {
+ *          if (occupiedByEnemy)
+ *          {
+ *              CAPTURE AND MOVE
+ *          }
+ *          else
+ *          {
+ *              INVALID MOVE (allied piece on space)
+ *          }
+ *      }
+ * }
+ * else
+ * {
+ *     INVALID MOVE (CANNOT EACH)
+ * }
  */
 public class Chessboard {
 
@@ -104,6 +130,10 @@ public class Chessboard {
         }
     }
 
+    /**
+     * Draws the board on application start
+     * @param appGrid
+     */
     public void drawBoard(GridPane appGrid) {
 
         // Arrange board GUI
@@ -171,24 +201,26 @@ public class Chessboard {
                     @Override
                     public void handle(DragEvent event) {
                         logger.debug("Drop detected");
-                        // TODO: Piece move logic
 
-                        // Get selected piece
+                        // Get selected pane
                         StackPane srcPane = ((StackPane) ((ImageView) event.getGestureSource()).getParent());
 
-                        Piece selectedPiece = boardMap.get(
-                                GridPane.getRowIndex(srcPane))[GridPane.getColumnIndex(srcPane)];
+                        // Get source coordinates and the selected piece
+                        int srcRow = GridPane.getRowIndex(srcPane);
+                        int srcCol = GridPane.getColumnIndex(srcPane);
+                        Piece selectedPiece = boardMap.get(srcRow)[srcCol];
 
-                        // Get current coordinates
-                        int droppedRow = GridPane.getRowIndex(square);
-                        int droppedCol = GridPane.getColumnIndex(square);
+                        // Get destination coordinates
+                        int destRow = GridPane.getRowIndex(square);
+                        int destCol = GridPane.getColumnIndex(square);
+
+                        // Evaluate move
+                        isMoveValid(selectedPiece, srcRow, srcCol, destRow, destCol);
 
                         // Change position in boardMap
-                        boardMap.get(droppedRow)[droppedCol] = selectedPiece;
+                        boardMap.get(destRow)[destCol] = selectedPiece;
                         boardMap.get(GridPane.getRowIndex(srcPane))[GridPane.getColumnIndex(srcPane)] = null;
 
-
-                        // Eval move
 
                         Dragboard db = event.getDragboard();
                         if (db.hasImage()) {
@@ -212,17 +244,20 @@ public class Chessboard {
         }
     }
 
-    public void drawPieces(GridPane appGrid) {
-
-
-    }
-
+    /**
+     * Used for external access to the boardMap
+     * @return
+     */
     public HashMap<Integer, Piece[]> getBoardMap() {
         return boardMap;
     }
 
-    public void addDraggableListener(ImageView imgView) {
 
+    /**
+     * Adds the draggable listener to the piece ImageView object
+     * @param imgView
+     */
+    public void addDraggableListener(ImageView imgView) {
 
         imgView.setOnDragDetected(new EventHandler<MouseEvent>() {
             @Override
@@ -247,5 +282,51 @@ public class Chessboard {
                 }
             }
         });
+    }
+
+    /**
+     * Determines the validity of a move given the piece, its old position, and new position
+     * @param piece
+     * @param srcRow
+     * @param srcCol
+     * @param destRow
+     * @param destCol
+     * @return
+     */
+    public Boolean isMoveValid(Piece piece, int srcRow, int srcCol, int destRow, int destCol) {
+
+        boolean pathClear = false;
+        boolean result = false;
+        //TODO: LOGIC
+
+        return result;
+    }
+
+
+    /**
+     * Determined whether a space is occupied
+     * @param destRow
+     * @param destCol
+     * @return
+     */
+    public Boolean isSpaceOccupied(int destRow, int destCol) {
+        boolean result = false;
+
+
+        return result;
+    }
+
+
+    /**
+     * Determine whether an enimy unit occupies a square
+     * @param destRow
+     * @param destCol
+     * @return
+     */
+    public Boolean isEnemyInSpace(int destRow, int destCol) {
+        boolean result = false;
+
+
+        return result;
     }
 }

@@ -23,4 +23,8 @@ public class BlackRook extends Piece {
         return assetPath;
     }
 
+    public PieceBehaviour getBehaviour() {
+        return behaviour;
+    }
+
 }

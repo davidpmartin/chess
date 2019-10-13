@@ -24,4 +24,7 @@ public class WhiteQueen extends Piece {
         return assetPath;
     }
 
+    public PieceBehaviour getBehaviour() {
+        return behaviour;
+    }
 }

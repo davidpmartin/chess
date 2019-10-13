@@ -8,9 +8,9 @@ import client.pieces.behaviours.PawnBehaviour;
  */
 public class WhitePawn extends Piece {
 
+    private boolean hasDoubleMove = true;
     private PieceBehaviour behaviour = new PawnBehaviour();
     private String assetPath = "pieces/pawn_w.png";
-
 
     public WhitePawn() {
         super("white");
@@ -20,7 +20,13 @@ public class WhitePawn extends Piece {
         return this.colour;
     }
 
-    public String getAssetPath() {
-        return assetPath;
+    public String getAssetPath() { return assetPath; }
+
+    public PieceBehaviour getBehaviour() {
+        return behaviour;
+    }
+
+    public boolean getDoubleMove() {
+        return hasDoubleMove;
     }
 }
