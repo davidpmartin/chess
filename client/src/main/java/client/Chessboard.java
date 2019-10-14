@@ -217,6 +217,7 @@ public class Chessboard {
                         if (isValidMove(selectedPiece, srcRow, srcCol, destRow, destCol))
                         {
                             logger.debug("Valid move!!");
+
                             // Change position in boardMap
                             boardMap.get(destRow)[destCol] = selectedPiece;
                             boardMap.get(GridPane.getRowIndex(srcPane))[GridPane.getColumnIndex(srcPane)] = null;
@@ -304,35 +305,60 @@ public class Chessboard {
     public Boolean isValidMove(Piece piece, int srcRow, int srcCol, int destRow, int destCol) {
         boolean result = false;
 
+        // Check for a non-move
+        if (srcRow == destRow && srcCol == destCol)
+        {
+            return false;
+        }
+
+        // Validate piece movement logic
         switch(piece.getType())
         {
 
             /**
-             * Diagonal
-             * If abs(srcRow - destRow) == abs(srcCol - destRol)
-             *  THEYRE DIAG BRO
+             * Bishop
+             * Direction: NE, SE, SW, NW
+             * Distance: Any
              */
-
             case("bishop"):
-                if (isDiagonal(srcRow, srcCol, destRow, destCol))
+                if (
+                        isDiagonal(srcRow, srcCol, destRow, destCol) &&
+                        isAPath(srcRow, srcCol, destRow, destCol)
+                )
                 {
-                    //TODO: Pathing logic
                     result = true;
                 }
                 break;
 
 
+            /**
+             * Rook
+             * Direction: N, E, S, W
+             * Distance: Any
+             */
             case("rook"):
-                if (isStraight(srcRow, srcCol, destRow, destCol))
+                if (
+                        isStraight(srcRow, srcCol, destRow, destCol) &&
+                        isAPath(srcRow, srcCol, destRow, destCol))
                 {
-                    //TODO: Pathing logic
                     result = true;
                 }
                 break;
 
 
+            /**
+             * Queen
+             * Direction: All
+             * Distance: All
+             */
             case("queen"):
-                if (isDiagonal(srcRow, srcCol, destRow, destCol) || isStraight(srcRow, srcCol, destRow, destCol))
+                if (
+                        (
+                            isDiagonal(srcRow, srcCol, destRow, destCol) ||
+                            isStraight(srcRow, srcCol, destRow, destCol)
+                        ) &&
+                        isAPath(srcRow, srcCol, destRow, destCol))
+
                 {
                     result = true;
                 }
@@ -389,10 +415,48 @@ public class Chessboard {
              * Distance: 1 (2 on first move)
              */
             case("pawn"):
-                result = true;
+
+                // If move is 1 North
+                if (srcCol == destCol && destRow == srcRow - 1)
+                {
+                    if (!isSpaceOccupied(destRow, destCol))
+                    {
+                        result = true;
+                    }
+                }
+
+                // If NW has enemy
+                else if (
+                        destCol == srcCol - 1 &&
+                        destRow == srcRow - 1 &&
+                        isEnemyInSpace(srcRow, srcCol, destRow, destCol)
+                )
+                {
+                    result = true;
+                }
+
+                // If NE has enemy
+                else if (
+                        destCol == srcCol + 1 &&
+                        destRow == srcRow - 1 &&
+                        isEnemyInSpace(srcRow, srcCol, destRow, destCol)
+                )
+                {
+                    result = true;
+                }
+
+                // If double move | empty destination | available path
+                else if (
+                        ((Pawn) piece).getDoubleMoveStatus() &&
+                        !isSpaceOccupied(destRow, destCol) &&
+                        isAPath(srcRow, srcCol, destRow, destCol)
+                )
+                {
+                    result = true;
+                    ((Pawn) piece).disableDoubleMove();
+                }
                 break;
         }
-
         return result;
     }
 
@@ -416,6 +480,24 @@ public class Chessboard {
             else {
                 return false;
             }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
+    /**
+     * Determines where a space is occupied by a piece
+     * @param destRow
+     * @param destCol
+     * @return
+     */
+    public Boolean isSpaceOccupied(int destRow, int destCol) {
+        if (boardMap.get(destRow)[destCol] instanceof Piece)
+        {
+            return true;
         }
         else
         {
@@ -467,7 +549,7 @@ public class Chessboard {
 
 
     /**
-     * Determines is there is a valid path from one square to another
+     * Determines if there is a valid path from one square to another
      * @param srcRow
      * @param srcCol
      * @param destRow
@@ -475,7 +557,129 @@ public class Chessboard {
      * @return
      */
     public Boolean isAPath(int srcRow, int srcCol, int destRow, int destCol) {
-        return true;
+        Boolean result = true;
+
+        if (isStraight(srcRow, srcCol, destRow, destCol))
+        {
+            // If the move is horizontal
+            if (srcRow == destRow)
+            {
+                // If the move is negative on the column axis
+                if (destCol < srcCol)
+                {
+                    // For each space
+                    for (var i = srcCol - 1; i > destCol; i--)
+                    {
+                        // If it one contains a piece
+                        if (boardMap.get(srcRow)[i] instanceof Piece)
+                        {
+                            result = false;
+                        }
+                    }
+                }
+                // If the move is positive on the column axis
+                else
+                {
+                    // As above...
+                    for (var i = srcCol + 1; i < destCol; i++)
+                    {
+                        if (boardMap.get(srcRow)[i] instanceof Piece)
+                        {
+                            result = false;
+                        }
+                    }
+                }
+            }
+
+            // If the move is vertical
+            else if (srcCol == destCol)
+            {
+                // If the move is negative on the row axis
+                if (destRow < srcRow)
+                {
+                    // For each space
+                    for (var i = srcRow - 1; i > destRow; i--)
+                    {
+                        // If it one contains a piece
+                        if (boardMap.get(i)[srcCol] instanceof Piece)
+                        {
+                            result = false;
+                        }
+                    }
+                }
+                // If the move is positive on the column axis
+                else
+                {
+                    // As above...
+                    for (var i = srcRow + 1; i < destRow; i++)
+                    {
+                        if (boardMap.get(i)[srcCol] instanceof Piece)
+                        {
+                            result = false;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        else if(isDiagonal(srcRow, srcCol, destRow, destCol))
+        {
+            // If moving SE
+            if (destRow > srcRow && destCol > srcCol)
+            {
+                int j = srcCol + 1;
+                for (int i = srcRow + 1; i < destRow; i++)
+                {
+                    if (boardMap.get(i)[j] instanceof Piece)
+                    {
+                        result = false;
+                    }
+                    j++;
+                }
+            }
+            // If moving SW
+            else if (destRow > srcRow && destCol < srcCol)
+            {
+                int j = srcCol - 1;
+                for (int i = srcRow + 1; i < destRow; i++)
+                {
+                    if (boardMap.get(i)[j] instanceof Piece)
+                    {
+                        result = false;
+                    }
+                    j--;
+                }
+            }
+            // If moving NW
+            else if (destRow < srcRow && destCol < srcCol)
+            {
+                int j = srcCol - 1;
+                for (int i = srcRow - 1; i > destRow; i--)
+                {
+                    if (boardMap.get(i)[j] instanceof Piece)
+                    {
+                        result = false;
+                    }
+                    j--;
+                }
+            }
+            // If moving NE
+            else if (destRow < srcRow && destCol > srcCol)
+            {
+                int j = srcCol + 1;
+                for (int i = srcRow - 1; i > destRow; i--)
+                {
+                    if (boardMap.get(i)[j] instanceof Piece)
+                    {
+                        result = false;
+                    }
+                    j++;
+                }
+            }
+        }
+
+        return result;
     }
 
 }

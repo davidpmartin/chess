@@ -13,17 +13,22 @@ public class BlackPawn extends Pawn {
     private String type;
     private Position position;
     private MoveSet moveSet;
+    private Boolean doubleMove;
 
     public BlackPawn(int rank, int file) {
         this.position = new Position(rank, file);
         this.colour = "black";
         this.type = "pawn";
+        this.doubleMove = true;
     }
 
     @Override
     public void setMoveSet(MoveSet moveSet) {
         this.moveSet = moveSet;
     }
+
+    @Override
+    public void disableDoubleMove() { this.doubleMove = false; }
 
     @Override
     public String getAssetPath() {
@@ -54,4 +59,7 @@ public class BlackPawn extends Pawn {
     public MoveSet acceptVisitor(PieceVisitor visitor) {
         return visitor.update(this);
     }
+
+    @Override
+    public boolean getDoubleMoveStatus() { return this.doubleMove; }
 }

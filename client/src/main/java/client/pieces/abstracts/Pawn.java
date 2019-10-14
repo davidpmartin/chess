@@ -5,4 +5,7 @@ package client.pieces.abstracts;
  */
 public abstract class Pawn extends Piece {
 
+    public abstract void disableDoubleMove();
+
+    public abstract boolean getDoubleMoveStatus();
 }
