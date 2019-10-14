@@ -1,32 +1,57 @@
 package client.pieces;
 
-import client.pieces.behaviours.PieceBehaviour;
-import client.pieces.behaviours.PawnBehaviour;
+import client.PieceVisitor;
+import client.pieces.abstracts.Pawn;
+import client.pieces.components.AssetPath;
+import client.pieces.components.MoveSet;
+import client.pieces.components.Position;
 
-/**
- * Abstract white pawn
- */
-public class WhitePawn extends Piece {
+public class WhitePawn extends Pawn {
 
-    private boolean hasDoubleMove = true;
-    private PieceBehaviour behaviour = new PawnBehaviour();
-    private String assetPath = "pieces/pawn_w.png";
+    private AssetPath assetPath = new AssetPath("pieces/pawn_w.png");
+    private String colour;
+    private String type;
+    private Position position;
+    private MoveSet moveSet;
 
-    public WhitePawn() {
-        super("white");
+    public WhitePawn(int rank, int file) {
+        this.position = new Position(rank, file);
+        this.colour = "white";
+        this.type = "pawn";
     }
 
+    @Override
+    public void setMoveSet(MoveSet moveSet) {
+        this.moveSet = moveSet;
+    }
+
+    @Override
+    public String getAssetPath() {
+        return assetPath.getAssetPath();
+    }
+
+    @Override
+    public Position getPosition() {
+        return this.position;
+    }
+
+    @Override
+    public MoveSet getMoveSet() {
+        return this.moveSet;
+    }
+
+    @Override
     public String getColour() {
         return this.colour;
     }
 
-    public String getAssetPath() { return assetPath; }
-
-    public PieceBehaviour getBehaviour() {
-        return behaviour;
+    @Override
+    public String getType() {
+        return this.type;
     }
 
-    public boolean getDoubleMove() {
-        return hasDoubleMove;
+    @Override
+    public MoveSet acceptVisitor(PieceVisitor visitor) {
+        return visitor.update(this);
     }
 }

@@ -1,30 +1,57 @@
 package client.pieces;
 
-import client.pieces.behaviours.BishopBehaviour;
-import client.pieces.behaviours.PieceBehaviour;
+import client.PieceVisitor;
+import client.pieces.abstracts.Bishop;
+import client.pieces.components.AssetPath;
+import client.pieces.components.MoveSet;
+import client.pieces.components.Position;
 
-/**
- * Abstract white bishop
- */
-public class WhiteBishop extends Piece {
+public class WhiteBishop extends Bishop {
 
-    private PieceBehaviour behaviour = new BishopBehaviour();
-    private String assetPath = "pieces/bishop_w.png";
+    private AssetPath assetPath = new AssetPath("pieces/bishop_w.png");
+    private String colour;
+    private String type;
+    private Position position;
+    private MoveSet moveSet;
 
-    public WhiteBishop() {
-        super("white");
+    public WhiteBishop(int rank, int file) {
+        this.position = new Position(rank, file);
+        this.colour = "white";
+        this.type = "bishop";
     }
 
+    @Override
+    public void setMoveSet(MoveSet moveSet) {
+        this.moveSet = moveSet;
+    }
+
+    @Override
+    public String getAssetPath() {
+        return assetPath.getAssetPath();
+    }
+
+    @Override
+    public Position getPosition() {
+        return this.position;
+    }
+
+    @Override
+    public MoveSet getMoveSet() {
+        return this.moveSet;
+    }
+
+    @Override
     public String getColour() {
         return this.colour;
     }
 
-    public String getAssetPath() {
-        return assetPath;
+    @Override
+    public String getType() {
+        return this.type;
     }
 
-    public PieceBehaviour getBehaviour() {
-        return behaviour;
+    @Override
+    public MoveSet acceptVisitor(PieceVisitor visitor) {
+        return visitor.update(this);
     }
-
 }

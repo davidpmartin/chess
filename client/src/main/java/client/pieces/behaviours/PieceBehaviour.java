@@ -5,5 +5,4 @@ package client.pieces.behaviours;
  */
 public interface PieceBehaviour {
 
-    public void move();
 }
