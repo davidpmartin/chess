@@ -15,6 +15,7 @@ import javafx.scene.layout.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -49,10 +50,16 @@ import java.util.HashMap;
 public class Chessboard {
 
     private HashMap<Integer, Piece[]> boardMap;
+    private ArrayList<Piece> whiteCaptures;
+    private ArrayList<Piece> blackCaptures;
 
     final Logger logger = LogManager.getLogger(Chessboard.class);
     final MoveSetUpdater moveSetUpdater = new MoveSetUpdater();
 
+
+    /**
+     * Initializes the chessboard object in a ready state
+     */
     public Chessboard() {
 
         // Initialize the piece data structure
@@ -161,86 +168,8 @@ public class Chessboard {
                     addDraggableListener(imgView);
                 } catch (NullPointerException ex) { logger.debug(ex); }
 
-
-                /**
-                 * FOR DEBUGGING PURPOSES
-                 */
-                square.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent event) {
-                        logger.debug("Row: {}, Col: {}", GridPane.getRowIndex(square), GridPane.getColumnIndex(square));
-                        logger.debug("Piece: {}", boardMap.get(
-                                GridPane.getRowIndex(square))[GridPane.getColumnIndex(square)].getClass());
-                    }
-                });
-
-                square.setOnDragOver(new EventHandler<DragEvent>() {
-                    @Override
-                    public void handle(DragEvent event) {
-                        logger.debug("Drag over detected!");
-                        event.acceptTransferModes(TransferMode.MOVE);
-                    }
-                });
-
-                square.setOnDragEntered(new EventHandler<DragEvent>() {
-                    @Override
-                    public void handle(DragEvent event) {
-                        // TODO: Visual effect
-                    }
-                });
-
-                square.setOnDragExited(new EventHandler<DragEvent>() {
-                    @Override
-                    public void handle(DragEvent event) {
-                        // TODO: Visual effect remove
-                    }
-                });
-
-                square.setOnDragDropped(new EventHandler<DragEvent>() {
-                    @Override
-                    public void handle(DragEvent event) {
-                        logger.debug("Drop detected");
-
-                        // Get selected pane
-                        StackPane srcPane = ((StackPane) ((ImageView) event.getGestureSource()).getParent());
-
-                        // Get source coordinates and the selected piece
-                        int srcRow = GridPane.getRowIndex(srcPane);
-                        int srcCol = GridPane.getColumnIndex(srcPane);
-
-                        // Get destination coordinates
-                        int destRow = GridPane.getRowIndex(square);
-                        int destCol = GridPane.getColumnIndex(square);
-
-                        // Evaluate move
-                        Piece selectedPiece = boardMap.get(srcRow)[srcCol];
-                        if (isValidMove(selectedPiece, srcRow, srcCol, destRow, destCol))
-                        {
-                            logger.debug("Valid move!!");
-
-                            // Change position in boardMap
-                            boardMap.get(destRow)[destCol] = selectedPiece;
-                            boardMap.get(GridPane.getRowIndex(srcPane))[GridPane.getColumnIndex(srcPane)] = null;
-
-                            Dragboard db = event.getDragboard();
-                            if (db.hasImage()) {
-                                ImageView imgView = new ImageView(db.getImage());
-                                addDraggableListener(imgView);
-                                square.getChildren().add(imgView);
-                            }
-                            event.setDropCompleted(true);
-                            event.consume();
-                        }
-                        else
-                        {
-                            logger.debug("Invalid move!!");
-                            event.setDropCompleted(false);
-                            event.consume();
-                        }
-
-
-                    }
-                });
+                // Set piece movement listeners
+                setDragEventListeners(square);
 
                 appGrid.add(square, file, rank);
             }
@@ -289,6 +218,93 @@ public class Chessboard {
                 if (event.getTransferMode() == TransferMode.MOVE) {
                     ((Pane) imgView.getParent()).getChildren().clear();
                 }
+            }
+        });
+    }
+
+    /**
+     * Adds the various listeners requires for responding to square dragging
+     * @param square
+     */
+    public void setDragEventListeners(StackPane square)
+    {
+        /**
+         * FOR DEBUGGING PURPOSES
+         */
+        square.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                logger.debug("Row: {}, Col: {}", GridPane.getRowIndex(square), GridPane.getColumnIndex(square));
+                logger.debug("Piece: {}", boardMap.get(
+                        GridPane.getRowIndex(square))[GridPane.getColumnIndex(square)].getClass());
+            }
+        });
+
+        square.setOnDragOver(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                logger.debug("Drag over detected!");
+                event.acceptTransferModes(TransferMode.MOVE);
+            }
+        });
+
+        square.setOnDragEntered(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                // TODO: Visual effect
+            }
+        });
+
+        square.setOnDragExited(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                // TODO: Visual effect remove
+            }
+        });
+
+        square.setOnDragDropped(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                logger.debug("Drop detected");
+
+                // Get selected pane
+                StackPane srcPane = ((StackPane) ((ImageView) event.getGestureSource()).getParent());
+
+                // Get source coordinates and the selected piece
+                int srcRow = GridPane.getRowIndex(srcPane);
+                int srcCol = GridPane.getColumnIndex(srcPane);
+
+                // Get destination coordinates
+                int destRow = GridPane.getRowIndex(square);
+                int destCol = GridPane.getColumnIndex(square);
+
+                // Evaluate move
+                Piece selectedPiece = boardMap.get(srcRow)[srcCol];
+                if (isValidMove(selectedPiece, srcRow, srcCol, destRow, destCol))
+                {
+                    logger.debug("Valid move!!");
+
+                    // Change position in boardMap
+                    boardMap.get(destRow)[destCol] = selectedPiece;
+                    boardMap.get(GridPane.getRowIndex(srcPane))[GridPane.getColumnIndex(srcPane)] = null;
+
+                    Dragboard db = event.getDragboard();
+                    if (db.hasImage()) {
+                        ImageView imgView = new ImageView(db.getImage());
+                        addDraggableListener(imgView);
+                        square.getChildren().add(imgView);
+                    }
+                    event.setDropCompleted(true);
+                    event.consume();
+                }
+                else
+                {
+                    logger.debug("Invalid move!!");
+                    event.setDropCompleted(false);
+                    event.consume();
+                }
+
+
             }
         });
     }
@@ -413,40 +429,83 @@ public class Chessboard {
              * Pawn
              * Direction: N (NE/NW when capturing)
              * Distance: 1 (2 on first move)
+             * Special considerations: Unlike all other pieces, pawns can only move in on direction, 'forward', as
+             *  both black and white pawns have a different notion of forward, independent logic is required. To
+             *  avoid duplicating the logic code, we'll have some varialbes that are set based on colour used to
+             *  represent the directional adjustments requires for the checks
              */
             case("pawn"):
+                int forwardOne;
+                int forwardTwo;
+                int forwardLeftOneRow;
+                int forwardLeftOneCol;
+                int forwardRightOneRow;
+                int forwardRightOneCol;
 
-                // If move is 1 North
-                if (srcCol == destCol && destRow == srcRow - 1)
+                // For black pieces
+                if (piece.getColour() == "black")
+                {
+                    forwardOne = 1;
+                    forwardTwo = 2;
+                    forwardLeftOneRow = 1;
+                    forwardLeftOneCol = 1;
+                    forwardRightOneRow = 1;
+                    forwardRightOneCol = - 1;
+                }
+                else
+                {
+                    forwardOne = - 1;
+                    forwardTwo = - 2;
+                    forwardLeftOneRow = - 1;
+                    forwardLeftOneCol = - 1;
+                    forwardRightOneRow = - 1;
+                    forwardRightOneCol = 1;
+                }
+
+                // If move is 1 forward
+                if (srcCol == destCol && destRow == srcRow + forwardOne)
                 {
                     if (!isSpaceOccupied(destRow, destCol))
                     {
                         result = true;
+                        if (((Pawn) piece).getDoubleMoveStatus())
+                        {
+                            ((Pawn) piece).disableDoubleMove();
+                        }
                     }
                 }
 
-                // If NW has enemy
+                // If move is 1 forward-left
                 else if (
-                        destCol == srcCol - 1 &&
-                        destRow == srcRow - 1 &&
+                        destCol == srcCol + forwardLeftOneCol &&
+                        destRow == srcRow + forwardLeftOneRow &&
                         isEnemyInSpace(srcRow, srcCol, destRow, destCol)
                 )
                 {
                     result = true;
+                    if (((Pawn) piece).getDoubleMoveStatus())
+                    {
+                        ((Pawn) piece).disableDoubleMove();
+                    }
                 }
 
-                // If NE has enemy
+                // If move is 1 forward-right
                 else if (
-                        destCol == srcCol + 1 &&
-                        destRow == srcRow - 1 &&
+                        destCol == srcCol + forwardRightOneCol &&
+                        destRow == srcRow + forwardRightOneRow &&
                         isEnemyInSpace(srcRow, srcCol, destRow, destCol)
                 )
                 {
                     result = true;
+                    if (((Pawn) piece).getDoubleMoveStatus())
+                    {
+                        ((Pawn) piece).disableDoubleMove();
+                    }
                 }
 
                 // If double move | empty destination | available path
                 else if (
+                        srcCol == destCol && destRow == srcRow + forwardTwo &&
                         ((Pawn) piece).getDoubleMoveStatus() &&
                         !isSpaceOccupied(destRow, destCol) &&
                         isAPath(srcRow, srcCol, destRow, destCol)
@@ -455,6 +514,7 @@ public class Chessboard {
                     result = true;
                     ((Pawn) piece).disableDoubleMove();
                 }
+
                 break;
         }
         return result;
